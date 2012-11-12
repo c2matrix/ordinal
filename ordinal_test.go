@@ -1,7 +1,7 @@
 // Copyright 2012 Glenn Brown
 // See LICENSE.
 
-package ord
+package ordinal
 
 import (
 	"fmt"

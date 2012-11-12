@@ -23,9 +23,9 @@
 // > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // > THE SOFTWARE.
 	
-// Package ord provides utility functions for fast ordered containers.
+// Package ordinal provides utility functions for fast ordered containers.
 //
-package ord
+package ordinal
 
 import (
 	"bytes"
@@ -43,10 +43,19 @@ type Fast interface {
 	Score() float64
 }
 
-// IncreasingFns returns functions ordered containers can use to sort values in increasing order.
+// A LessFn returns true if a should be sorted before b.
+//
+type LessFn func(a, b interface{}) bool
+
+// A ScoreFn returns monotonically increasing values for increasing keys.
+// Keys with lower scores should be sorted before keys with higher scores.
+//
+type ScoreFn func(key interface{}) float64
+
+// Fns returns functions ordered containers can use to sort values in increasing order.
 // If the container cannot conveniently cache the results, consider FnScore instead.
 //
-func Fns(a interface{}) (less func(a, b interface{}) bool, score func(a interface{}) float64) {
+func Fns(a interface{}) (LessFn, ScoreFn) {
 	switch a.(type) {
 	case Fast:
 		return func(a, b interface{}) bool { return a.(Fast).Less(b) },
@@ -105,7 +114,7 @@ func Fns(a interface{}) (less func(a, b interface{}) bool, score func(a interfac
 
 // FnsReversed is like Fns, but sorts in reverse order.
 //
-func FnsReversed(a interface{}) (less func(a, b interface{}) bool, score func(interface{}) float64) {
+func FnsReversed(a interface{}) (LessFn, ScoreFn) {
 	switch a.(type) {
 	case Fast:
 		return func(a, b interface{}) bool { return b.(Fast).Less(a) },
@@ -162,12 +171,12 @@ func FnsReversed(a interface{}) (less func(a, b interface{}) bool, score func(in
 	panic(fmt.Sprintf("cannot order type %T: no method Less(a, b interface{}) bool", a))
 }
 
-// FnScore returns a score for a single value and a comparison
-// function that can be used to sort similar values.  It is typically
+// FnScore returns a score for a single value and a LessFn
+// that can be used to sort similar values.  It is typically
 // used by container methods for containers that do not cache the less
 // and score functions.
 // 
-func FnScore(value interface{}) (less func(a, b interface{}) bool, score float64) {
+func FnScore(value interface{}) (a LessFn, score float64) {
 	switch v := value.(type) {
 	case Fast:
 		return func(a, b interface{}) bool { return a.(Fast).Less(b) },
@@ -226,7 +235,7 @@ func FnScore(value interface{}) (less func(a, b interface{}) bool, score float64
 
 // FnScoreReversed is like FnScore but for sorting in reverse order.
 // 
-func FnScoreReversed(value interface{}) (less func(a, b interface{}) bool, score float64) {
+func FnScoreReversed(value interface{}) (a LessFn, score float64) {
 	switch v := value.(type) {
 	case Fast:
 		return func(a, b interface{}) bool { return b.(Fast).Less(a) },
