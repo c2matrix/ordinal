@@ -1,0 +1,46 @@
+PACKAGE
+
+package ordinal
+    import "github.com/glenn-brown/ordinal"
+
+    Package ordinal provides utility functions for fast ordered containers.
+
+TYPES
+
+type Fast interface {
+    Less(interface{}) bool
+    Score() float64
+}
+    Any type impementing the Fast interface is well-supported by this
+    package.
+
+type LessFn func(a, b interface{}) bool
+    A LessFn returns true if a should be sorted before b.
+
+func FnScore(value interface{}) (a LessFn, score float64)
+    FnScore returns a score for a single value and a LessFn that can be used
+    to sort similar values. It is typically used by container methods for
+    containers that do not cache the less and score functions.
+
+func FnScoreReversed(value interface{}) (a LessFn, score float64)
+    FnScoreReversed is like FnScore but for sorting in reverse order.
+
+func Fns(a interface{}) (LessFn, ScoreFn)
+    Fns returns functions ordered containers can use to sort values in
+    increasing order. If the container cannot conveniently cache the
+    results, consider FnScore instead.
+
+func FnsReversed(a interface{}) (LessFn, ScoreFn)
+    FnsReversed is like Fns, but sorts in reverse order.
+
+type ScoreFn func(key interface{}) float64
+    A ScoreFn returns monotonically increasing values for increasing keys.
+    Keys with lower scores should be sorted before keys with higher scores.
+
+type Slow interface {
+    Less(interface{}) bool
+}
+    Any type implementing the Slow interface is supported by this package,
+    but the Fast interface is faster.
+
+
